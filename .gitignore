@@ -5,6 +5,7 @@ node_modules/
 
 wa_auth/
 server/wa_auth/
+server/_IGNORE_miel-session/
 
 dist/
 build/

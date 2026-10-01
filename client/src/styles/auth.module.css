@@ -1,0 +1,335 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+
+
+
+
+
+.logo {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #dfcfcf85;
+}
+
+.logoIcon {
+  color: #d4a017;
+}
+
+.login_background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+  z-index: -1;
+}
+
+
+
+.authForm {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(241, 186, 5, 0.301);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.authForm_title {
+  margin-bottom: 3rem;
+  color: #333;
+  font-weight: 700;
+
+}
+
+.submitButton {
+  width: 12rem;
+  height: 3rem;
+  background: var(--hover-color);
+  overflow: hidden;
+  color: #e1e1e1;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  font-weight: 600;
+  transition: 1s ease-in-out;
+  box-shadow: 0 0 1rem rgba(255, 180, 18, 0.3),
+    0 0 2rem rgba(255, 180, 18, .3),
+    0 0 3rem rgba(255, 180, 18, .3),
+    0 0 4rem rgba(255, 180, 18, .3),
+    0 0 7rem rgba(255, 180, 18, .3),
+    0 0 8rem rgba(255, 180, 18, .3),
+    0 0 10rem rgba(255, 180, 185, .3),
+    0 0 15rem rgba(255, 180, 185, .3),;
+  border-radius: 5px;
+  position: relative;
+  border: 2px solid rgba(241, 186, 5, 0.301);
+  cursor: pointer;
+  margin: 0 2rem;
+  margin-bottom: 1rem;
+}
+
+.primarySignupButton {
+  width: 12rem;
+  height: 3rem;
+  background: var(--hover-color);
+  overflow: hidden;
+  color: #e1e1e1;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  font-weight: 600;
+  transition: 1s ease-in-out;
+  box-shadow: 0 0 1rem rgba(255, 180, 18, 0.3),
+    0 0 2rem rgba(255, 180, 18, .3),
+    0 0 3rem rgba(255, 180, 18, .3),
+    0 0 4rem rgba(255, 180, 18, .3),
+    0 0 7rem rgba(255, 180, 18, .3),
+    0 0 8rem rgba(255, 180, 18, .3),
+    0 0 10rem rgba(255, 180, 185, .3),
+    0 0 15rem rgba(255, 180, 185, .3),;
+  border-radius: 5px;
+  position: relative;
+  border: 2px solid rgba(241, 186, 5, 0.301);
+  cursor: pointer;
+  margin: 0 2rem;
+  margin-bottom: 1rem;
+}
+
+.primarySignupButton:hover {
+  background: rgba(245, 243, 237, 0.986);
+  color: #333;
+}
+
+.submitButton:hover {
+  background: rgba(245, 243, 237, 0.986);
+  color: #333;
+}
+
+.formGroup {
+  margin-bottom: 2rem;
+  color: rgba(245, 243, 237, 0.986);
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #f8f6f6;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.inputIcon {
+  margin-right: 0.5rem;
+}
+
+.primaryButton {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #d4a017;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 1s;
+}
+
+.primaryButton:hover {
+  background-color: #b8860b;
+}
+
+.primaryButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.authLinks {
+  margin-top: 1.5rem;
+}
+
+.authLinks a {
+  color: #fcfbfa;
+  text-decoration: none;
+  font-weight: 400;
+
+}
+
+.link {
+  color: #fcfbfa;
+  text-decoration: none;
+  font-weight: 400;
+}
+
+.errorAlert {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+} 
+
+/* Ajouter ces styles */
+.passwordContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInput {
+  flex: 1;
+  padding-right: 40px !important;
+}
+
+.togglePassword {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #666;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.togglePassword:hover {
+  color: #0e0d0d;
+}
+
+.togglePassword:focus {
+  outline: 2px solid #ffa500;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Pour le thème sombre (si applicable) */
+@media (prefers-color-scheme: dark) {
+  .togglePassword {
+    color: #ccc;
+  }
+  .togglePassword:hover {
+    color: #fff;
+  }
+}
+
+
+/* -------------------------------------------------- */
+/*  Responsive : page Connexion (Login)               */
+/*  Valeurs uniquement en rem                         */
+/* -------------------------------------------------- */
+
+/* 1)  Grand écran (> 75 rem  ≈ 1200 px) ----------- */
+@media (min-width: 75rem) {
+  .authForm {
+    /* déjà centré horizontalement et verticalement */
+    padding: 0 6rem;      /* un peu d’air latéral */
+  }
+
+  .authForm_title {
+    font-size: 2.5rem;    /* un titre plus marqué */
+    margin-bottom: 3.5rem;
+  }
+
+  .formGroup input {
+    font-size: 1.1rem;
+    padding: 0.9rem 1rem;
+  }
+
+  .submitButton,
+  .primarySignupButton {
+    width: 15rem;         /* bouton plus large */
+    height: 3.5rem;
+    font-size: 1.3rem;
+  }
+}
+
+/* 2)  Tablette (43 rem ≈ 688 px  →  75 rem) ------- */
+@media (min-width: 43rem) and (max-width: 74.9375rem) {
+  .authForm {
+    padding: 0 4rem;
+  }
+
+  .authForm_title {
+    font-size: 2.2rem;
+    margin-bottom: 3rem;
+  }
+
+  .formGroup input {
+    font-size: 1rem;
+    padding: 0.8rem;
+  }
+
+  .submitButton,
+  .primarySignupButton {
+    width: 14rem;
+    height: 3.2rem;
+    font-size: 1.2rem;
+  }
+}
+
+/* 3)  Mobile (< 43 rem ≈ 688 px) ------------------ */
+@media (max-width: 42.9375rem) {
+  .authContainer {
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .authForm {
+    position: absolute;   /* plus d’overlay */
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    justify-content: flex-start; /* commence en haut */
+  }
+
+  .authForm_title {
+    font-size: 1.8rem;
+    margin-bottom: 2.5rem;
+    margin-top: 3rem;     /* espace sous le haut de l’écran */
+  }
+
+  .formGroup {
+    margin-bottom: 1.5rem;
+  }
+
+  .formGroup label {
+    font-size: 1rem;
+  }
+
+  .formGroup input {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+
+  .submitButton,
+  .primarySignupButton {
+    width: 100%;          /* bouton pleine largeur */
+    max-width: 20rem;     /* mais pas trop large non plus */
+    height: 3rem;
+    font-size: 1.1rem;
+    margin: 0 auto 1rem;
+  }
+
+  .authLinks {
+    font-size: 0.9rem;
+    text-align: center;
+  }
+}
+

@@ -1,0 +1,261 @@
+/* =========================================================
+   PRODUCTCART – RESPONSIVE (mobile → 4K)
+   ========================================================= */
+
+:root {
+  --miel: #d4a017;
+  --miel-fonce: #b78a14;
+  --cire: #fffbeb;
+  --ombre: rgba(212, 160, 23, .08);
+  --ombre-hover: rgba(212, 160, 23, .25);
+  --radius: .75rem;
+  --gap: 1.5rem;
+  --max-w: 75rem; /* 1200 px */
+}
+
+/* 1 – RESET MINI */
+body { margin: 0; font-family: 'Poppins', sans-serif; background: #fdfcf9; }
+
+/* 2 – CONTENEUR GLOBAL */
+.cart-container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 1.5rem;
+  animation: fadeIn .6s;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(1.25rem); }
+}
+
+/* 3 – TITRE + FIL D’ARIANE */
+.cart-title {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--miel);
+  margin-bottom: 1.5rem;
+}
+.cart-title::after {
+  content: '';
+  display: block;
+  width: 4rem;
+  height: .25rem;
+  margin: .5rem auto 0;
+  background: var(--miel);
+  border-radius: .125rem;
+}
+
+.breadcrumb-nav {
+  font-size: .875rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+.breadcrumb-link { color: var(--miel); text-decoration: none; }
+
+/* 4 – GRID PRINCIPAL */
+.cart-layout {
+  display: grid;
+  gap: var(--gap);
+}
+@media (min-width: 64rem) { /* 1024 px */
+  .cart-layout { grid-template-columns: 2fr 1fr; }
+}
+
+/* 5 – CARTES (blocs blancs) */
+.cart-items-card,
+.cart-form {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 .25rem 1.25rem var(--ombre);
+  padding: 1.5rem;
+}
+
+/* 6 – LISTE DES ARTICLES */
+.cart-item {
+  display: grid;
+  grid-template-columns: 5rem 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f3f3f3;
+}
+.cart-item:last-child { border-bottom: none; }
+
+.cart-item-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.cart-item-details {
+  min-width: 0; /* empêche le débordement de texte */
+}
+.cart-item-name {
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 .25rem;
+}
+.cart-item-type {
+  font-size: .8125rem;
+  color: #777;
+}
+.cart-item-price {
+  font-weight: 700;
+  color: var(--miel);
+  margin-top: .25rem;
+}
+
+/* Quantité mobile : boutons côte-à-côte */
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.cart-item-quantity button {
+  width: 2rem;
+  height: 2rem;
+  background: var(--cire);
+  border: none;
+  border-radius: 50%;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cart-item-remove {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: .8125rem;
+  cursor: pointer;
+}
+
+/* Sur très petits écrans (≤ 480 px) on stack verticalement */
+@media (max-width: 30rem) {
+  .cart-item {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+  .cart-item-image { width: 6rem; }
+}
+
+/* 7 – TOTAL & BOUTON CONTINUER */
+.cart-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--miel);
+  margin-top: 1rem;
+}
+.btn-continue-shopping,
+.btn-home {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: .75rem 1.25rem;
+  background: #f2f2f2;
+  color: #333;
+  text-decoration: none;
+  border-radius: var(--radius);
+  transition: .2s;
+}
+.btn-continue-shopping:hover,
+.btn-home:hover { background: #e5e5e5; }
+
+/* 8 – FORMULAIRE */
+.form-group { margin-bottom: 1rem; }
+.form-group label {
+  display: block;
+  margin-bottom: .25rem;
+  font-weight: 500;
+  color: #444;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: .75rem;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  transition: border-color .2s, box-shadow .2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--miel);
+  box-shadow: 0 0 0 .1875rem var(--ombre-hover);
+  outline: none;
+}
+
+/* Grille 2 colonnes (nom + téléphone) */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 36rem) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Récapitulatif */
+.order-summary {
+  background: var(--cire);
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin: 1.5rem 0;
+}
+.summary-row,
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+}
+.summary-total {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--miel);
+  margin-top: .5rem;
+  padding-top: .5rem;
+  border-top: 1px solid #fcd34d;
+}
+
+/* Bouton commander */
+.btn-checkout {
+  width: 100%;
+  padding: .875rem;
+  background: var(--miel);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: .2s;
+}
+.btn-checkout:hover { background: var(--miel-fonce); }
+.btn-checkout:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Messages flash */
+.message-banner {
+  padding: .75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  text-align: center;
+}
+.message-banner.success { background: #e6ffe6; color: #155724; }
+.message-banner.error   { background: #ffeaea; color: #721c24; }
+
+/* États vides */
+.cart-empty,
+.cart-loading {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+.cart-empty h2 { color: var(--miel); margin-bottom: 1rem; }
+
+/* petit écran : boutons 100 % largeur */
+@media (max-width: 30rem) {
+  .cart-items-card,
+  .cart-form { padding: 1rem; }
+}

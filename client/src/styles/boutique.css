@@ -1,0 +1,153 @@
+.boutique {
+  max-width: 120rem;
+  margin: auto;
+  padding: 1rem;
+}
+
+.boutique-layout {
+  display: grid;
+  grid-template-columns: 20rem 1fr;
+  gap: 2rem;
+}
+
+.sidebar {
+  background: #fafafa;
+  padding: 1rem;
+  border-radius: .5rem;
+  height: fit-content;
+  position: sticky;
+  top: 1rem;
+}
+
+.sidebar label {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.pagination button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background: #ffc107;
+  color: #000;
+}
+
+
+/* -------------------------------------------------- */
+/*  Responsive – Boutique (products.css)              */
+/* -------------------------------------------------- */
+
+/* 1) Desktop large ≥ 75 rem ------------------------ */
+@media (min-width: 75rem) {
+  .boutique-layout {
+    grid-template-columns: 22rem 1fr;
+    gap: 3rem;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+
+  .sidebar {
+    padding: 2rem;
+  }
+}
+
+/* 2) Tablette 43 rem → 75 rem --------------------- */
+@media (min-width: 43rem) and (max-width: 74.9375rem) {
+  .boutique {
+    padding: 2rem;
+  }
+
+  .boutique-layout {
+    grid-template-columns: 20rem 1fr;
+    gap: 2rem;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .heading-secondary {
+    font-size: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* 3) Mobile < 43 rem ------------------------------ */
+@media (max-width: 42.9375rem) {
+  .boutique {
+    padding: 1rem;
+  }
+
+  .boutique-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .sidebar {
+    position: static;
+    order: 2;           /* apparaît après la grille */
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .product-grid {
+    order: 1;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .heading-secondary {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+  /* badge panier en ligne */
+  .cart-badge {
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .search-bar {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .pagination button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.9rem;
+  }
+}

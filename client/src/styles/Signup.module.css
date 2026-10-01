@@ -1,0 +1,97 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.authContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000044;
+}
+
+
+.signupForm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.background_signup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  opacity: 0.7; 
+}
+
+
+
+
+.signupForm {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(241, 186, 5, 0.301);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+
+/* Ajouter ces styles */
+.passwordContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInput {
+  flex: 1;
+  padding-right: 40px !important;
+}
+
+.togglePassword {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #666;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.togglePassword:hover {
+  color: #0c0b0b;
+}
+
+.togglePassword:focus {
+  outline: 2px solid #ffa500;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Pour le thème sombre (si applicable) */
+@media (prefers-color-scheme: dark) {
+  .togglePassword {
+    color: #ccc;
+  }
+  .togglePassword:hover {
+    color: #fff;
+  }
+}

@@ -15,12 +15,13 @@ import orderRoutes from './routes/orders.js'
 import cartRoutes from './routes/cartRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 import { connectDB } from './config/db.js'
-import { initWA } from './utils/whatsappClient.js'
 
 // Charger les variables d'environnement
 dotenv.config()
 
 const PORT = process.env.PORT || 5000
+const isProd = process.env.NODE_ENV === 'production'
+const API_URL = process.env.API_URL || `http://localhost:${PORT}`
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -44,7 +45,10 @@ const swaggerOptions = {
       description: 'Documentation de l\'API pour la boutique de miel'
     },
     servers: [
-      { url: 'http://localhost:5000', description: 'Serveur de développement' }
+      {
+        url: API_URL,
+        description: isProd ? 'Serveur de production' : 'Serveur de développement'
+      }
     ],
     components: {
       securitySchemes: {
@@ -63,39 +67,59 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions)
 
 // Initialisation de l'application
 const app = express()
-mongoose.set('debug', true)
 
-// 👇 CORS : UNE SEULE configuration — dev (5173) + preview (4173)
+// Nécessaire derrière le proxy de Render (IP client, rate limit, cookies secure)
+app.set('trust proxy', 1)
+
+// Logs Mongoose détaillés uniquement en développement
+mongoose.set('debug', !isProd)
+
+// CORS : localhost (dev/preview) + URL du front en production
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  process.env.FRONTEND_URL,
+  process.env.FRONT_URL
+]
+  .filter(Boolean)
+  .map((url) => url.replace(/\/+$/, '')) // retire les "/" finaux éventuels
+
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:4173'
-  ],
+  origin: (origin, cb) => {
+    // Pas d'origin (Postman, curl, requêtes serveur) ou origine autorisée
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true)
+    // Préversions Cloudflare Pages (xxxx.miel-ecommerce.pages.dev)
+    if (/^https:\/\/[a-z0-9-]+\.miel-ecommerce\.pages\.dev$/.test(origin)) {
+      return cb(null, true)
+    }
+    return cb(new Error('Origine non autorisée par CORS'))
+  },
   credentials: true
 }))
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(morgan('dev'))
+app.use(morgan(isProd ? 'combined' : 'dev'))
 
 // Documentation Swagger (protégée par mot de passe)
-app.use(
-  '/api-docs',
-  basicAuth({
-    users: {
-      [process.env.SWAGGER_USER || 'admin']:
-      process.env.SWAGGER_PASSWORD || 'password'
-    },
-    challenge: true
-  }),
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec)
-)
+const swaggerUser = process.env.SWAGGER_USER || 'admin'
+const swaggerPassword = process.env.SWAGGER_PASSWORD || (isProd ? null : 'password')
 
-app.get('/api-docs.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json')
-  res.send(swaggerSpec)
-})
+if (swaggerPassword) {
+  const swaggerAuth = basicAuth({
+    users: { [swaggerUser]: swaggerPassword },
+    challenge: true
+  })
+
+  app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
+  app.get('/api-docs.json', swaggerAuth, (req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    res.send(swaggerSpec)
+  })
+} else {
+  console.warn('⚠️  SWAGGER_PASSWORD non défini : documentation Swagger désactivée en production')
+}
 
 // Fichiers statiques : images
 const imagesPath = join(__dirname, 'images')
@@ -120,7 +144,7 @@ app.get('/', (req, res) => {
     status: 'success',
     message: 'API Miel eCommerce is running',
     version: '1.0.0',
-    docs: `http://localhost:${PORT}/api-docs`
+    docs: `${API_URL}/api-docs`
   })
 })
 
@@ -140,7 +164,7 @@ app.get('/test-images', (req, res) => {
       success: true,
       imagesPath,
       files: imageFiles,
-      testUrl: `http://localhost:${PORT}/images/${imageFiles[0] || ''}`
+      testUrl: `${API_URL}/images/${imageFiles[0] || ''}`
     })
   } catch (error) {
     res.json({
@@ -157,15 +181,25 @@ app.use((err, req, res, next) => {
   res.status(500).send('Erreur serveur !')
 })
 
-// 👇 Connexion MongoDB : UNE SEULE fois
-connectDB().then(() => {
-  // WhatsApp ne doit pas empêcher le démarrage de l'API
-  initWA().catch(err => console.error('❌ WhatsApp init error:', err.message))
+// Connexion MongoDB : une seule fois
+connectDB().then(async () => {
+  // WhatsApp : désactivé par défaut (activer avec ENABLE_WHATSAPP=true)
+  // Import dynamique : le module n'est même pas chargé si la variable est absente
+  if (process.env.ENABLE_WHATSAPP === 'true') {
+    try {
+      const { initWA } = await import('./utils/whatsappClient.js')
+      await initWA()
+    } catch (err) {
+      console.error('❌ WhatsApp init error:', err.message)
+    }
+  } else {
+    console.log('ℹ️  WhatsApp désactivé (ENABLE_WHATSAPP != true)')
+  }
 })
 
-// 👇 Démarrage du serveur : UNE SEULE fois
+// Démarrage du serveur : une seule fois
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server backend sur http://localhost:${PORT}`)
+  console.log(`✅ Server backend sur le port ${PORT}`)
 })
 
 server.on('error', (err) => {
@@ -209,41 +243,41 @@ server.on('error', (err) => {
 
 
 
-
-
-
-
-
-
 // import express from 'express'
 // import mongoose from 'mongoose'
 // import dotenv from 'dotenv'
 // import cors from 'cors'
-// import products from './routes/products.js'
-// import orders from './routes/orders.js'
-// import { connectDB } from './config/db.js'; 
-// import { createProduct } from './controllers/productController.js';; 
-// import { getProducts } from './controllers/productController.js'; 
-// import { createOrder } from './controllers/orderController.js';
-// import productRoutes from './routes/products.js';
-// import orderRoutes from './routes/orders.js'; 
-// import cartRoutes from './routes/cartRoutes.js';
-// import morgan from 'morgan';
-// import authRoutes from './routes/authRoutes.js';
-// import swaggerJSDoc from 'swagger-jsdoc';
-// import swaggerUi from 'swagger-ui-express';
-// import basicAuth from 'express-basic-auth';
-// import { fileURLToPath } from 'url';
-// import { dirname, join } from 'path';
-// import { readFileSync, readdirSync } from 'fs';
-// import { initWA } from './utils/whatsappClient.js';
+// import morgan from 'morgan'
+// import swaggerJSDoc from 'swagger-jsdoc'
+// import swaggerUi from 'swagger-ui-express'
+// import basicAuth from 'express-basic-auth'
+// import { fileURLToPath } from 'url'
+// import { dirname, join } from 'path'
+// import { readdirSync } from 'fs'
 
+// import productRoutes from './routes/products.js'
+// import orderRoutes from './routes/orders.js'
+// import cartRoutes from './routes/cartRoutes.js'
+// import authRoutes from './routes/authRoutes.js'
+// import { connectDB } from './config/db.js'
+// import { initWA } from './utils/whatsappClient.js'
 
+// // Charger les variables d'environnement
+// dotenv.config()
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
+// const PORT = process.env.PORT || 5000
 
-// // [...] Après vos imports existants
+// const __filename = fileURLToPath(import.meta.url)
+// const __dirname = dirname(__filename)
+
+// // Détection des erreurs non catchées
+// process.on('unhandledRejection', (err) => {
+//   console.error('UNHANDLED REJECTION:', err)
+// })
+
+// process.on('uncaughtException', (err) => {
+//   console.error('UNCAUGHT EXCEPTION:', err)
+// })
 
 // // Configuration Swagger
 // const swaggerOptions = {
@@ -267,188 +301,127 @@ server.on('error', (err) => {
 //       }
 //     }
 //   },
-//   apis: ['./routes/*.js', './controllers/*.js'] // Fichiers à analyser
-// };
-
-// const swaggerSpec = swaggerJSDoc(swaggerOptions);
-
-
-
-
-// // Ajoutez ceci en haut du fichier pour détecter les erreurs non catchées
-// process.on('unhandledRejection', (err) => {
-//   console.error('UNHANDLED REJECTION:', err);
-// });
-
-// process.on('uncaughtException', (err) => {
-//   console.error('UNCAUGHT EXCEPTION:', err);
-// });
-// //import sendWhatsAppNotification from './utils/whatsapp.js'; // Importer la fonction d'envoi de notification WhatsApp
-
-
-
-// // Load the variables environnement
-// dotenv.config();
-
-// // Initialize l'application
-// const app = express();
-
-// // Middlewares
-// app.use(cors(
-//   {
-//     origin: 'http://localhost:5173', // Remplacez par l'URL de votre client
-//     credentials: true // Si vous utilisez des cookies/sessions
-//   }
-// ));
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-// mongoose.set('debug', true);
-
-// app.use('/api/auth', authRoutes); // Toutes les routes commencent par /api/auth
-
-// // Middleware CORS
-// app.use(cors({
-//   origin: 'http://localhost:5173', // Remplacez par l'URL de votre client
-//   credentials: true // Si vous utilisez des cookies/sessions
-// }));
-// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// // 📍 Remplacez la partie "Servir les fichiers statiques" 
-// // Configuration des fichiers statiques
-// const imagesPath = join(__dirname, 'images');
-// console.log('📁 Chemin des images:', imagesPath);
-
-// // Servir les images
-// app.use('/images', express.static(imagesPath));
-
-// // Créer le dossier images s'il n'existe pas
-// try {
-//   readdirSync(imagesPath);
-// } catch (error) {
-//   console.log('📂 Création du dossier images...');
-//   // mkdirSync(imagesPath, { recursive: true });
+//   apis: ['./routes/*.js', './controllers/*.js']
 // }
 
+// const swaggerSpec = swaggerJSDoc(swaggerOptions)
 
+// // Initialisation de l'application
+// const app = express()
+// mongoose.set('debug', true)
 
+// // 👇 CORS : UNE SEULE configuration — dev (5173) + preview (4173)
+// app.use(cors({
+//   origin: [
+//     'http://localhost:5173',
+//     'http://localhost:4173'
+//   ],
+//   credentials: true
+// }))
 
-// // Route protégée pour la documentation UI
+// app.use(express.json())
+// app.use(express.urlencoded({ extended: true }))
+// app.use(morgan('dev'))
+
+// // Documentation Swagger (protégée par mot de passe)
 // app.use(
 //   '/api-docs',
 //   basicAuth({
-//     users: { 
-//       [process.env.SWAGGER_USER || 'admin']: 
-//       process.env.SWAGGER_PASSWORD || 'password' 
+//     users: {
+//       [process.env.SWAGGER_USER || 'admin']:
+//       process.env.SWAGGER_PASSWORD || 'password'
 //     },
 //     challenge: true
 //   }),
 //   swaggerUi.serve,
 //   swaggerUi.setup(swaggerSpec)
-// );
+// )
 
-// // Route publique pour le fichier JSON (si nécessaire)
 // app.get('/api-docs.json', (req, res) => {
-//   res.setHeader('Content-Type', 'application/json');
-//   res.send(swaggerSpec);
-// });
+//   res.setHeader('Content-Type', 'application/json')
+//   res.send(swaggerSpec)
+// })
 
+// // Fichiers statiques : images
+// const imagesPath = join(__dirname, 'images')
+// console.log('📁 Chemin des images:', imagesPath)
+// app.use('/images', express.static(imagesPath))
 
-// // Route racine de test
+// try {
+//   readdirSync(imagesPath)
+// } catch {
+//   console.log('📂 Le dossier images sera créé automatiquement si besoin')
+// }
+
+// // Routes API
+// app.use('/api/products', productRoutes)
+// app.use('/api/orders', orderRoutes)
+// app.use('/api/cart', cartRoutes)
+// app.use('/api/auth', authRoutes)
+
+// // Routes de test
 // app.get('/', (req, res) => {
-//   res.json({ 
+//   res.json({
 //     status: 'success',
 //     message: 'API Miel eCommerce is running',
 //     version: '1.0.0',
-//     docs: 'http://localhost:5000/api-docs' // Si vous avez Swagger
-//   });
-// });
+//     docs: `http://localhost:${PORT}/api-docs`
+//   })
+// })
 
-// // 📍 Ajoutez cette route de test pour vérifier les images
-// // 📍 Route de test pour les images (après la configuration des fichiers statiques)
+// app.get('/api/test', (req, res) => {
+//   console.log('Test route called')
+//   res.json({ message: 'Test réussi' })
+// })
+
 // app.get('/test-images', (req, res) => {
 //   try {
-//     const files = readdirSync(imagesPath);
-//     const imageFiles = files.filter(f => 
+//     const files = readdirSync(imagesPath)
+//     const imageFiles = files.filter(f =>
 //       ['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(ext => f.toLowerCase().endsWith(ext))
-//     );
-    
-//     res.json({ 
+//     )
+
+//     res.json({
 //       success: true,
 //       imagesPath,
 //       files: imageFiles,
 //       testUrl: `http://localhost:${PORT}/images/${imageFiles[0] || ''}`
-//     });
+//     })
 //   } catch (error) {
-//     res.json({ 
-//       success: false, 
+//     res.json({
+//       success: false,
 //       error: error.message,
-//       imagesPath 
-//     });
+//       imagesPath
+//     })
 //   }
-// });
+// })
 
-
-// // Activation des log complete
-
-
-// // Ajoutez ceci avant les routes
-// app.use(morgan('dev'));  // Logs of request HTTP
-// app.use(express.json()); // Pour voir le corps des request
-
-// // Connection to the database
-// connectDB();
-
-// connectDB().then(() => {
-//   initWA().catch(err => console.error('❌ WhatsApp init error:', err.message));
-// });
-
-// // Routes
-
-// //Routes test avant les autres routes 
-
-// app.get('/api/test', (req, res) => {
-//   console.log('Test route called'); // Vérifiez dans les logs
-//   res.json({ message: 'Test réussi' });
-// });
-
-// // IMPORTANT : AFIN QUE LE WE GIVE LE CHEMIN CORRECT J'AI AJOUTÉ /API AUX CHEMINX PRECEDENTS
-
-// app.use('/api/products', productRoutes);
-// app.use('/api/orders', orderRoutes);
-// app.use('/api/cart', cartRoutes);
-// app.use('/api/auth', authRoutes);
-
-
-// // Gestion des erreurs DOIT venir en dernier
+// // Gestion des erreurs (DOIT être en dernier)
 // app.use((err, req, res, next) => {
-//   console.error(err.stack);
-//   res.status(500).send('Erreur serveur !');
-// });
+//   console.error(err.stack)
+//   res.status(500).send('Erreur serveur !')
+// })
 
-// //Lancer le server
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => {
-//   console.log(`✅ Server backend start sur http://localhost:${PORT}`);
-// });
+// // 👇 Connexion MongoDB : UNE SEULE fois
+// connectDB().then(() => {
+//   // WhatsApp ne doit pas empêcher le démarrage de l'API
+//   initWA().catch(err => console.error('❌ WhatsApp init error:', err.message))
+// })
 
-
-
-
-// // Connection MongoDB
-// mongoose.connect(process.env.MONGO_URI)
-//   .then(() => console.log('✅ Connected to MongoDB'))
-//   .catch(err => console.error('❌ Error MongoDB:', err)); 
-
-// // Start the server with error's management
+// // 👇 Démarrage du serveur : UNE SEULE fois
 // const server = app.listen(PORT, '0.0.0.0', () => {
-//   console.log(`✅ Server backend started sur http://localhost:${PORT}`);
-// });
+//   console.log(`✅ Server backend sur http://localhost:${PORT}`)
+// })
 
 // server.on('error', (err) => {
 //   if (err.code === 'EADDRINUSE') {
-//     console.log(`⚠️  Le port ${PORT} is occupied, tentative on the port ${Number(PORT)+1}`);
-//     app.listen(Number(PORT)+1);
+//     const newPort = Number(PORT) + 1
+//     console.log(`⚠️  Port ${PORT} occupé, tentative sur le port ${newPort}`)
+//     app.listen(newPort, '0.0.0.0', () => {
+//       console.log(`✅ Server backend sur http://localhost:${newPort}`)
+//     })
 //   } else {
-//     console.error('❌ Error server:', err);
+//     console.error('❌ Erreur serveur:', err)
 //   }
-// });
+// })
+

@@ -1,16 +1,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [react()],
-  base: mode === 'production' ? '/miel-ecommerce/' : '/',
 
+  // Cloudflare Pages sert le site à la racine du domaine
+  base: '/',
+
+  // Le proxy ne s'applique qu'en développement (npm run dev).
+  // Port 5000 = port par défaut de ton index.js.
+  // Si ton serveur local tourne sur 5001 (variable PORT dans ton .env serveur), remets 5001.
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
+        target: 'http://localhost:5000',
         changeOrigin: true,
       },
     },
   },
-}))
+})

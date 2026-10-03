@@ -1,14 +1,10 @@
 /// <reference types="vite/client" />
 
+interface ImportMetaEnv {
+  readonly VITE_API_BASE_URL?: string
+  readonly VITE_APP_NAME?: string
+}
 
-
-
-
-
-// /// <reference types="vite/client" />
-// /// <reference types="vite-plugin-react-svgs" />
-// /// <reference types="vite-plugin-react" />
-
-// declare module 'react-refresh/runtime' {
-//   export const injectIntoGlobalHook: (window: any) => void;
-// }
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
